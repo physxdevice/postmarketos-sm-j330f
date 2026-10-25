@@ -1,0 +1,11 @@
+--- a/drivers/input/touchscreen/synaptics_td4x00/synaptics_i2c_rmi.h
++++ b/drivers/input/touchscreen/synaptics_td4x00/synaptics_i2c_rmi.h
+@@ -71,7 +71,7 @@
+ #define USE_OPEN_CLOSE
+ #endif
+ 
+-/* #define SKIP_UPDATE_FW_ON_PROBE */
++#define SKIP_UPDATE_FW_ON_PROBE
+ /* #define REPORT_ORIENTATION */
+ /* #define USE_SENSOR_SLEEP */
+ /**************************************/

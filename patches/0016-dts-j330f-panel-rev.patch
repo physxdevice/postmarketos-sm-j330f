@@ -1,0 +1,12 @@
+--- a/arch/arm64/boot/dts/exynos7570-j4lte_common.dtsi
++++ b/arch/arm64/boot/dts/exynos7570-j4lte_common.dtsi
+@@ -279,6 +279,9 @@
+ 		timing,dsi-hs-clk = <728>;
+ 		timing,pms = <2 112 1>;
+ 		timing,dsi-escape-clk = <16>;
++
++		/* stock J330 value, selects td4100_init branch */
++		rev = <2>;
+ 	};
+ 
+ 	usb@13600000 {

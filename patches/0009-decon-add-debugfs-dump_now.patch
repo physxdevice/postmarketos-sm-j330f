@@ -1,0 +1,35 @@
+--- a/drivers/video/fbdev/exynos/decon_7570/decon_core.c	2026-10-23 15:34:43.453052663 +0300
++++ b/drivers/video/fbdev/exynos/decon_7570/decon_core.c	2026-10-23 15:34:43.453864781 +0300
+@@ -3219,6 +3219,23 @@
+ };
+ #endif
+ 
++static ssize_t decon_dump_trigger_read(struct file *file, char __user *buf,
++		size_t count, loff_t *ppos)
++{
++	struct decon_device *decon = file->private_data;
++
++	if (*ppos)
++		return 0;
++	decon_dump(decon);
++	*ppos = 1;
++	return 0;
++}
++
++static const struct file_operations decon_dump_trigger_fops = {
++	.open = simple_open,
++	.read = decon_dump_trigger_read,
++};
++
+ #ifdef CONFIG_DECON_USE_BOOTLOADER_FB
+ static int decon_copy_bootloader_fb(struct platform_device *pdev,
+ 		struct dma_buf *dest_buf)
+@@ -3463,6 +3480,8 @@
+ 
+ 	debugfs_create_u32("disp_dump", 0644, decon->debug_root, &decon->disp_dump);
+ 	decon->disp_dump = UINT_MAX;
++	debugfs_create_file("dump_now", 0444, decon->debug_root,
++			decon, &decon_dump_trigger_fops);
+ #endif
+ 
+ 	/* register internal and external DECON as entity */

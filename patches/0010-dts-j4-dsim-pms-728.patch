@@ -1,0 +1,13 @@
+--- a/arch/arm64/boot/dts/exynos7570-j4lte_common.dtsi
++++ b/arch/arm64/boot/dts/exynos7570-j4lte_common.dtsi
+@@ -262,8 +262,8 @@
+ 		/* decon V porch : VBP, VFP, VSA */
+ 		timing,decon_v-porch = <5 9 2>;
+ 
+-		timing,dsi-hs-clk = <490>;
+-		timing,pms = <3 226 2>;
++		timing,dsi-hs-clk = <728>;
++		timing,pms = <2 112 1>;
+ 		timing,dsi-escape-clk = <16>;
+ 	};
+ 

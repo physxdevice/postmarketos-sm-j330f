@@ -1,0 +1,46 @@
+--- a/drivers/video/fbdev/exynos/decon_7570/panels/Makefile	2026-10-23 18:30:17.890093899 +0300
++++ b/drivers/video/fbdev/exynos/decon_7570/panels/Makefile	2026-10-23 18:30:17.943279826 +0300
+@@ -3,7 +3,7 @@
+ obj-$(CONFIG_DISPLAY_USE_INFO) += dpui.o
+ 
+ obj-$(and $(CONFIG_EXYNOS_DECON_MDNIE_LITE),$(CONFIG_SEC_GPIO_DVS),$(subst undefined,y,$(origin CONFIG_SAMSUNG_PRODUCT_SHIP))) += dd_mdnie.o
+-obj-$(and $(CONFIG_SEC_GPIO_DVS),$(subst undefined,y,$(origin CONFIG_SAMSUNG_PRODUCT_SHIP))) += dd_lcd.o dd_backlight.o dd_dpu.o dd_param.o
++obj-$(CONFIG_DEBUG_FS) += dd_dpu.o
+ 
+ obj-$(CONFIG_PANEL_S6E8AA5X01)	+= s6e8aa5x01_lcd_ctrl.o dimming_core.o
+ obj-$(CONFIG_PANEL_TD4100)	+= td4100_lcd_ctrl.o
+--- a/drivers/video/fbdev/exynos/decon_7570/panels/dd.h	2026-10-23 18:30:17.898683688 +0300
++++ b/drivers/video/fbdev/exynos/decon_7570/panels/dd.h	2026-10-23 18:30:17.943344268 +0300
+@@ -37,7 +37,7 @@
+ static inline void dsim_write_data_dump(struct dsim_device *dsim, u32 id, unsigned long d0, u32 d1) {};
+ #endif
+ 
+-#if defined(CONFIG_DEBUG_FS) && !defined(CONFIG_SAMSUNG_PRODUCT_SHIP) && defined(CONFIG_SEC_GPIO_DVS)
++#if defined(CONFIG_DEBUG_FS)
+ static inline int dd_simple_write_to_buffer(char *ibuf, size_t sizeof_ibuf,
+ 					loff_t *ppos, const char __user *user_buf, size_t count)
+ {
+--- a/drivers/video/fbdev/exynos/decon_7570/panels/dd_dpu.c	2026-10-23 18:30:17.906375798 +0300
++++ b/drivers/video/fbdev/exynos/decon_7570/panels/dd_dpu.c	2026-10-23 18:30:17.943590896 +0300
+@@ -9,7 +9,7 @@
+ /* temporary solution: Do not use these sysfs as official purpose */
+ /* these function are not official one. only purpose is for temporary test */
+ 
+-#if defined(CONFIG_DEBUG_FS) && !defined(CONFIG_SAMSUNG_PRODUCT_SHIP) && defined(CONFIG_SEC_GPIO_DVS)
++#if defined(CONFIG_DEBUG_FS)
+ #include <linux/debugfs.h>
+ #include <linux/device.h>
+ #include <linux/lcd.h>
+@@ -711,9 +711,10 @@
+ 	static struct dentry *debugfs_root;
+ 	struct d_info *d = NULL;
+ 	struct dsim_device *dsim = get_dsim_drvdata(0);
+-	struct device *dev = dsim->dev;
++	struct device *dev = dsim ? dsim->dev : NULL;
++	struct decon_device *decon = get_decon_drvdata(0);
+ 
+-	if (!dev) {
++	if (!dev || !decon || !decon->lcd_info || !decon->pdata) {
+ 		dbg_warn("failed to get device\n");
+ 		ret = -ENODEV;
+ 		goto exit;

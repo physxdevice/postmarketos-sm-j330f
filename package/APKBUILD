@@ -1,0 +1,116 @@
+# Reference: <https://postmarketos.org/vendorkernel>
+# Kernel config based on: arch/arm64/configs/exynos7570-j4lte_defconfig
+maintainer="Hendra Manudinata <hendra@manoedinata.com>"
+pkgname=linux-samsung-j4lte
+pkgver=3.18.140
+pkgrel=16
+pkgdesc="Samsung Galaxy J4 kernel fork"
+arch="aarch64"
+_carch="arm64"
+_flavor="samsung-j4lte"
+url="https://kernel.org"
+license="GPL-2.0-only"
+options="!strip !check !tracedeps pmb:cross-native"
+makedepends="
+	bash
+	bc
+	bison
+	devicepkg-dev
+	findutils
+	flex
+	gcc6
+	openssl-dev
+	perl
+	dtbtool-exynos
+"
+
+# Source
+_repository="android_kernel_samsung_universal7570"
+_commit="57ffdcdde7e968af314e809cdab6b3ee24bc4d24"
+_config="config-$_flavor.$arch"
+source="
+	$pkgname-$_commit.tar.gz::https://github.com/DaunScape/$_repository/archive/$_commit.tar.gz
+	$_config
+	0001-drivers-leds-ktd2692-Guard-function-calls-under-CONF.patch
+	0002-zram-Set-zstd-as-the-default-compressor.patch
+	0003-drivers-usb-u_ether-Force-setting-random-MAC-address.patch
+	0004-staging-samsung-sec_batt-Force-disable-low-power-cha.patch
+	0005-drivers-samsung-scsc-Fix-FW_LOCATION_AUTO-symbol.patch
+	0006-drivers-samsung-scsc-Skip-mount-point-check.patch
+	0007-fbdev-decon_7570-Initialize-framebuffer-more-late.patch
+	0008-HACK-loop-Force-disable-Direct-I-O-operations.patch
+	0009-decon-add-debugfs-dump_now.patch
+	0010-dts-j4-dsim-pms-728.patch
+	0011-dts-j330f-panel-power.patch
+	0012-dts-j330f-porch.patch
+	0013-dd-dpu-enable-debugfs.patch
+	0014-dts-j330f-vclk-denom.patch
+	0015-dts-j330f-isl98611-power-early.patch
+	0016-dts-j330f-panel-rev.patch
+	0017-dts-j330f-synaptics-touch.patch
+	0018-touchscreen-skip-fw-update-on-probe.patch
+	0019-touchscreen-synaptics-no-incell-build-fix.patch
+	linux3.7to4.5-ARM64-remove-Sun-Solaris-style-flag-on-section.patch
+	fix-check-lxdialog.patch
+"
+builddir="$srcdir/$_repository-$_commit"
+_outdir="out"
+
+# Compiler: GCC 6 (not tested with LLVM)
+if [ "${CC:0:5}" != "gcc6-" ]; then
+	CC="gcc6-$CC"
+	HOSTCC="gcc6-gcc"
+	CROSS_COMPILE="gcc6-$CROSS_COMPILE"
+fi
+
+prepare() {
+	default_prepare
+	. downstreamkernel_prepare
+}
+
+build() {
+	unset LDFLAGS
+	make O="$_outdir" ARCH="$_carch" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-postmarketOS"
+
+	# Build dt image with exynos dtbtool
+	dtbTool-exynos --pagesize 2048 \
+		--platform 0x50a6 \
+		--subtype  0x217584da \
+		-o "$_outdir/arch/$_carch/boot"/dt.img \
+		$(find "$_outdir/arch/$_carch/boot/dts/" -name *.dtb)
+}
+
+package() {
+	downstreamkernel_package "$builddir" "$pkgdir" "$_carch" \
+		"$_flavor" "$_outdir"
+
+	install -Dm644 "$_outdir/arch/$_carch/boot"/dt.img \
+		"$pkgdir"/boot/dt.img
+}
+
+sha512sums="
+1321013b84588f9b155bc3dba7e7b5324111f334b3494f933eff5034c13e5879e4b88d08dbffd8b369262d8fe9527b736c1a6c17e6c60664cb7a2cd331cf4aed  linux-samsung-j4lte-57ffdcdde7e968af314e809cdab6b3ee24bc4d24.tar.gz
+e5c81fabc2916fa2ccd5cf8ce845fafeec5e0f645a2729bb72b0a8579ec9729225a4081f9cd411758728c25204607ca98325486aae269cbe12147b6625c9fbcb  config-samsung-j4lte.aarch64
+fafed0c79633b50f9c62febeb1198bc863ddcaf7d3140bf58b87f574a75a16c1b73d563ce849ab8400030d6700bf64ea3bbb60b5cb86a902696e1bd702a3b276  0001-drivers-leds-ktd2692-Guard-function-calls-under-CONF.patch
+f81dc234b7c37e5c33472a22f96299c435d4e2728e24164dc375abbc80912ce5a9045178deb2338f1f484a52296ad558541c01c101f244a62bf6149e75e0406b  0002-zram-Set-zstd-as-the-default-compressor.patch
+f69b9363ffd543f98f7799256bb3cfccc84623b69d8c7ee3ea291b52cecac7d961d4b491db6b5477bdd527ad3e9cbd738d67647fc074adcd2927b5eb6d2478dd  0003-drivers-usb-u_ether-Force-setting-random-MAC-address.patch
+8f17a56957476832df48f90c229302958ec848300ea7dff76c2e9fc9433c301b28239bbc7404cf9c1bac5410dd9984dce39d132bbb29650324b9136777185583  0004-staging-samsung-sec_batt-Force-disable-low-power-cha.patch
+e0f5e505e794d4db1ed87a86dadf8321199c8c749a2b1a9b31fc572320b95d9cc004664eea2f3e20163d2993bfe0f50bdcecf027b70ce551d02abb2874985f9a  0005-drivers-samsung-scsc-Fix-FW_LOCATION_AUTO-symbol.patch
+f0da70e3b5cc498e19430936422cf89476d68a5bbe45d593ab3c8bf353a81401a9133df983d3f1f84d0127670ad32b8adcb91e1beb821eb2efddd831f22f79dc  0006-drivers-samsung-scsc-Skip-mount-point-check.patch
+76700ecaea56f15d4204ff3064e640552eca35d3713fddaaaee204d7bf983ef419c08c7d759ca58430a27bd10d4bda7d1b6a7ec34ba27f503256f4ee6e42649d  0007-fbdev-decon_7570-Initialize-framebuffer-more-late.patch
+ee281f9a6d5bab871d83e02cea6e222c6883e452c7b22ac65b512eca37d007218cad50e297189a4ad46be8d3d5a70f26f62867c75de30387cb4777a0c3a3e5e0  0008-HACK-loop-Force-disable-Direct-I-O-operations.patch
+fb1ca24e048e1ea4dbc0ff409efcec91a87d45dc226e9e7fb69e297fdaafc1259fdaafcdf1537ff0b9694a19a0965b268fb2a4d23718ead33f9fbb9a2207c9fe  0009-decon-add-debugfs-dump_now.patch
+4f6b994787865703a42318ae0621b843a728cde73cf0cad943339d0bd130f3ba3ce489de13c611fa35144294d5683b1a8651e7eac280728b5e5cd9d974906e5e  0010-dts-j4-dsim-pms-728.patch
+b5ac0e67b6b65b6079038cd15a3a26d8e6f3bdccdaa719ee9eb7f70cabddc032b6137b7bbb063d0f5fdcbe3ffd592b7c9543a0cdc3fcc7cc9c87350c26fcb0a6  0011-dts-j330f-panel-power.patch
+6294964ff64425915cf3640c4377c405e0161540c39ccf10103a1773045357b3606af7239046c858f8e512be37a2134533cd3f52f22329148000f6655407feb9  0012-dts-j330f-porch.patch
+54cb4c12b0ecf6f219e86d9421d3301786c7941895d82bfdea6d26fbec250070413e0ae33354a602e62a04a21e462ac2fcabb95e83f1654725135525da407e98  0013-dd-dpu-enable-debugfs.patch
+6837d4789bb379d939447e9834777321d7743503014be58c11a7ad9f603876f21f9b9b0923de66f0c2fac621e0a7e1b370c9f1a09aea3aa64ee9c87f16a1948b  0014-dts-j330f-vclk-denom.patch
+0d5aa675e20360cf2ea964704fbf8b409313e5b352b6d9ef7195e5e8fe7112523416a5b25029653fadbc53460aa0dc9d073d791c8bcd9d85e7338202f0d8fc29  0015-dts-j330f-isl98611-power-early.patch
+8edd1051137178f54b6a2bd69b02e745afc4af9ace6287f21fdcfb5274d6045177e11993b26e18c04a590b62d41c533c2ee3e8156c06e9f250a22141fc3339b3  0016-dts-j330f-panel-rev.patch
+ecef275dc591a7eaa3360efca93add579967713d103cd9a9771aec571ccbfe05406df28acbc2e53d17914b0815bde0e72acfe09a6d1dafcbc63b00df63eca76a  0017-dts-j330f-synaptics-touch.patch
+0a764df2ae2dd62244f47e14579280b224acbfb31cae392b0e3fdd8314420165a0d139eb7d4f465033d3c1836ac135aa757b72d95eda124e5fe4bbe026d3ce6d  0018-touchscreen-skip-fw-update-on-probe.patch
+590da674fa387d14db10522eba6bb3df3f7bdc26f53d24541f9b1d1690ea1bfdb993f7c6051b0e5c7695bbf1fb7a2beffd8cc79d90f68dda2e095a46837be5f8  0019-touchscreen-synaptics-no-incell-build-fix.patch
+75545ccd0082a119b9ad95fcef3523c939a5c946f8f3a5c3dde15cee1502f6c1011050a0ad5359426f018bb7ceea1c97a28c7665941bc89f365c8d11065ce0f6  linux3.7to4.5-ARM64-remove-Sun-Solaris-style-flag-on-section.patch
+182be3c596b9cc267ac108d7cf03fc8c328ccc6b36770800e4dcedea8d1bb65e3f5eacf590c2948f58b1418cc60a1670ba77dde8c259e428d158c31b6e1dbaf5  fix-check-lxdialog.patch
+"

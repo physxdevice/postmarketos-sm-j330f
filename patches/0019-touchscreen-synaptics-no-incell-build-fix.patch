@@ -1,0 +1,36 @@
+--- a/drivers/input/touchscreen/synaptics_td4x00/synaptics_i2c_rmi.h
++++ b/drivers/input/touchscreen/synaptics_td4x00/synaptics_i2c_rmi.h
+@@ -1493,8 +1493,8 @@
+ 	struct delayed_work incell_reset_work;
+ 	struct notifier_block tsp_reboot_nb;
+ 	bool tsp_reboot_flag;
++#endif
+ 	bool flag_incell_reset_work;
+-#endif
+ 	struct delayed_work work_read_info;
+ 
+ 	enum synaptics_product_ids product_id;			/* product id of ic */
+--- a/drivers/input/touchscreen/synaptics_td4x00/synaptics_i2c_rmi.c
++++ b/drivers/input/touchscreen/synaptics_td4x00/synaptics_i2c_rmi.c
+@@ -463,8 +463,10 @@
+ 				"%s: I2C read over retry limit\n",
+ 				__func__);
+ 		retval = -EIO;
++#ifdef CONFIG_SEC_INCELL
+ 		if (rmi4_data->tsp_probe)
+ 			schedule_delayed_work(&rmi4_data->incell_reset_work, msecs_to_jiffies(5));
++#endif
+ 	}
+ 
+ exit:
+@@ -556,8 +558,10 @@
+ 				"%s: I2C write over retry limit\n",
+ 				__func__);
+ 		retval = -EIO;
++#ifdef CONFIG_SEC_INCELL
+ 		if (rmi4_data->tsp_probe)
+ 			schedule_delayed_work(&rmi4_data->incell_reset_work, msecs_to_jiffies(5));
++#endif
+ 	}
+ 
+ exit:

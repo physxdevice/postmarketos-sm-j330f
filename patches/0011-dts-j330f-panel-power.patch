@@ -1,0 +1,57 @@
+--- a/arch/arm64/boot/dts/exynos7570-j4lte_common.dtsi
++++ b/arch/arm64/boot/dts/exynos7570-j4lte_common.dtsi
+@@ -216,32 +216,43 @@
+ 	};
+ 
+ 	decon_board: decon_board {
+-		gpio_lcd_3p0 = <&gpd1 0 0>;
++		gpio_panel_enp = <&gpa2 0 0>;
++		gpio_panel_enn = <&gpa2 1 0>;
++		gpio_blic_on = <&gpa1 2 0>;
+ 		gpio_lcd_rst = <&gpd2 0 0>;
+ 
+ 		dsim_set_panel_power_enable {
+ 			type =
+ 			"regulator,enable",	"LCD_1P8",
+-			"gpio,high",	"gpio_lcd_3p0",
+-			"delay,usleep",	"5000";
++			"delay,usleep",	"2000",
++			"gpio,high",	"gpio_panel_enp",
++			"delay,usleep",	"2000",
++			"gpio,high",	"gpio_panel_enn",
++			"delay,usleep",	"11000",
++			"gpio,high",	"gpio_blic_on",
++			"delay,usleep",	"2000";
+ 		};
+ 		dsim_set_panel_power_disable {
+ 			type =
++			"delay,usleep",	"6000",
++			"gpio,low",	"gpio_panel_enn",
++			"delay,usleep",	"6000",
++			"gpio,low",	"gpio_panel_enp",
++			"delay,usleep",	"16000",
+ 			"gpio,low",	"gpio_lcd_rst",
+-			"delay,usleep",	"10000",
+-			"gpio,low",	"gpio_lcd_3p0",
+-			"regulator,disable",	"LCD_1P8",
+-			"delay,msleep",	"30";
++			"delay,usleep",	"6000",
++			"gpio,low",	"gpio_blic_on",
++			"delay,usleep",	"11000",
++			"regulator,disable",	"LCD_1P8";
+ 		};
+ 		dsim_reset_panel {
+ 			type =
+-			"delay,usleep",	"1000",
+ 			"gpio,high",	"gpio_lcd_rst",
+-			"delay,usleep",	"10000",
++			"delay,usleep",	"1100",
+ 			"gpio,low",	"gpio_lcd_rst",
+-			"delay,usleep",	"10000",
++			"delay,usleep",	"1100",
+ 			"gpio,high",	"gpio_lcd_rst",
+-			"delay,usleep",	"10000";
++			"delay,msleep",	"130";
+ 		};
+ 	};
+ 

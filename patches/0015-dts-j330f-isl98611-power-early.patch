@@ -1,0 +1,31 @@
+--- a/arch/arm64/boot/dts/exynos7570-j4lte_common.dtsi
++++ b/arch/arm64/boot/dts/exynos7570-j4lte_common.dtsi
+@@ -221,10 +221,13 @@
+ 		gpio_blic_on = <&gpa1 2 0>;
+ 		gpio_lcd_rst = <&gpd2 0 0>;
+ 
++		dsim_set_panel_power_early {
++			type =
++			"regulator,enable",	"LCD_1P8",
++			"delay,usleep",	"2000";
++		};
+ 		dsim_set_panel_power_enable {
+ 			type =
+-			"regulator,enable",	"LCD_1P8",
+-			"delay,usleep",	"2000",
+ 			"gpio,high",	"gpio_panel_enp",
+ 			"delay,usleep",	"2000",
+ 			"gpio,high",	"gpio_panel_enn",
+@@ -1816,3 +1819,12 @@
+ };
+ 
+ 
++&i2c_2 {
++	status = "okay";
++	samsung,i2c-max-bus-freq = <400000>;
++
++	isl98611@29 {
++		compatible = "i2c,isl98611";
++		reg = <0x29>;
++	};
++};

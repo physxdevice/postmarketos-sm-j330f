@@ -1,0 +1,11 @@
+--- a/arch/arm64/boot/dts/exynos7570-j4lte_common.dtsi
++++ b/arch/arm64/boot/dts/exynos7570-j4lte_common.dtsi
+@@ -200,7 +200,7 @@
+ 		/* decon_divider_num = 1024 */
+ 		vclk-num = <1024>;
+ 		/* decon_divider_denom = 408 */
+-		vclk-denom = <418>;
++		vclk-denom = <621>;
+ 
+ 		/* aclk = 208Mhz */
+ 		disp-dvfs = <208000000>;
